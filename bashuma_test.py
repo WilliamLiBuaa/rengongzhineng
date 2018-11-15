@@ -25,7 +25,7 @@ class Node():
         self.state_final=np.array(state_final)
 
 
-    def _calc_diff_bit(self):
+    def calc_diff_bit(self):
         self.h_val=0
         for i in range(self.state_final.shape[0]):
             for j in range(self.state_final.shape[1]):
@@ -38,8 +38,18 @@ class Node():
             pass
         return self.h_val
 
+    def calc_dis_h(self):
+        self.h_val=0
+        for num in range(1,self.state_final.flatten().shape[0]):
+            i=np.argwhere(self.state_final==num)[0,0]
+            j=np.argwhere(self.state_final==num)[0,1]
+            i_=np.argwhere(self.state==num)[0,0]
+            j_=np.argwhere(self.state==num)[0,0]
+            self.h_val+=abs(i-i_)+abs(j-j_)
+        return self.h_val
+
     def is_final(self):
-        if self._calc_diff_bit()==0:
+        if self.calc_diff_bit()==0:
             return True
         return False
 
@@ -66,7 +76,7 @@ class Node():
         return self.legal_move
 
     def calc_f_val(self):
-        self.f_val = self._calc_diff_bit() + self.depth
+        self.f_val = self.calc_dis_h() + self.depth
         return self.f_val
 
     def _do_move(self,move):
@@ -173,7 +183,7 @@ def main():
         cur_node=o.pop_first()
         print('current node')
         print(cur_node.state)
-        print(cur_node.depth, '+', cur_node._calc_diff_bit(), '=', cur_node.calc_f_val())
+        print(cur_node.depth, '+', cur_node.calc_dis_h(), '=', cur_node.calc_f_val())
         c.add(cur_node)
         if cur_node.is_final():
             print('Success!')
