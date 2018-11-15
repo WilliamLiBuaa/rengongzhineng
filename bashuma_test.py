@@ -4,9 +4,9 @@ import sys
 state_final = ([1,2,3],
                [8,0,4],
                [7,6,5])
-state0=([2,1,8],
-        [6,3,0],
-        [7,5,4])
+state0=([2,8,3],
+        [1,0,4],
+        [7,6,5])
 
 class Node():
     def __init__(self,parent,move):
@@ -44,7 +44,7 @@ class Node():
             i=np.argwhere(self.state_final==num)[0,0]
             j=np.argwhere(self.state_final==num)[0,1]
             i_=np.argwhere(self.state==num)[0,0]
-            j_=np.argwhere(self.state==num)[0,0]
+            j_=np.argwhere(self.state==num)[0,1]
             self.h_val+=abs(i-i_)+abs(j-j_)
         return self.h_val
 
