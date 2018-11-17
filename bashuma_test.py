@@ -12,15 +12,15 @@ state_final=([1,2,3,4],
              [5,6,7,8],
              [9,10,11,12],
              [13,14,15,0])
-# state0=([11,9,4,15],
-#         [1,3,0,12],
-#         [7,5,8,6],
-#         [13,2,10,14])
+state0=([11,9,4,15],
+        [1,3,0,12],
+        [7,5,8,6],
+        [13,2,10,14])
 
-state0=([1,2,3,4],
-        [5,6,8,12],
-        [9,10,7,15],
-        [13,14,11,0])
+# state0=([1,3,4,12],
+#         [5,2,6,0],
+#         [9,10,8,7],
+#         [13,14,11,15])
 
 class Node():
     def __init__(self,parent,move):
@@ -53,7 +53,7 @@ class Node():
 
     def calc_dis_h(self):
         self.h_val=0
-        for num in range(1,self.state_final.flatten().shape[0]):
+        for num in range(0,self.state_final.flatten().shape[0]):
             i=np.argwhere(self.state_final==num)[0,0]
             j=np.argwhere(self.state_final==num)[0,1]
             i_=np.argwhere(self.state==num)[0,0]
