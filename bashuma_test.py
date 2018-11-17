@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from numba import jit
 
 # state_final = ([1,2,3],
 #                [8,0,4],
@@ -23,6 +24,7 @@ state0=([11,9,4,15],
 #         [13,14,11,15])
 
 class Node():
+    @jit
     def __init__(self,parent,move):
         global state_final
         self.move=move
@@ -38,7 +40,7 @@ class Node():
         self.state = self._do_move(move)
         self.state_final=np.array(state_final)
 
-
+    @jit
     def calc_diff_bit(self):
         self.h_val=0
         for i in range(self.state_final.shape[0]):
@@ -51,6 +53,7 @@ class Node():
         #     self.h_val-=1
         return self.h_val
 
+    @jit
     def calc_dis_h(self):
         self.h_val=0
         for num in range(0,self.state_final.flatten().shape[0]):
@@ -60,12 +63,12 @@ class Node():
             j_=np.argwhere(self.state==num)[0,1]
             self.h_val+=abs(i-i_)+abs(j-j_)
         return self.h_val
-
+    @jit
     def is_final(self):
         if self.calc_diff_bit()==0:
             return True
         return False
-
+    @jit
     def _calc_legal_move(self):
         self.legal_move=['r','d','l','u']
         if self.move=='r':
@@ -87,11 +90,11 @@ class Node():
         if self.zero_position[1]==self.state_final.shape[1]-1:
             self.legal_move.remove('l')
         return self.legal_move
-
+    @jit
     def calc_f_val(self):
         self.f_val = self.calc_dis_h() + self.depth
         return self.f_val
-
+    @jit
     def _do_move(self,move):
         # 仅限s0使用
         if move=='e':
@@ -126,14 +129,15 @@ class Node():
 
 
 class Open():
+    @jit
     def __init__(self,s0):
         self.l=[s0]
-
+    @jit
     def is_empty(self):
         if len(self.l)==0:
             return True
         return False
-
+    @jit
     def sort(self):
         if len(self.l)==1:
             return self.l
@@ -144,7 +148,7 @@ class Open():
                 self.l[i+1]=self.l[i]
                 i-=1
             self.l[i+1].h_val = key
-
+    @jit
     def sort_t1(self):
         min_f=sys.maxsize
         for i in range(len(self.l)):
@@ -173,7 +177,7 @@ class Closed():
 
     def add(self,node):
         self.l.append(node)
-
+    @jit
     def find(self,node):
         for i in self.l:
             if (node.state==i.state).all():
@@ -189,14 +193,16 @@ c=Closed()
 
 
 def main():
+    counter=0
     while 1:
         if o.is_empty():
             print('Failed to solve this problem!')
             return
         cur_node=o.pop_first()
-        print('current node')
-        print(cur_node.state)
-        print(cur_node.depth, '+', cur_node.calc_dis_h(), '=', cur_node.calc_f_val())
+        counter+=1
+        print('current node: ',counter)
+        # print(cur_node.state)
+        # print(cur_node.depth, '+', cur_node.calc_dis_h(), '=', cur_node.calc_f_val())
         c.add(cur_node)
         if cur_node.is_final():
             print('Success!')
