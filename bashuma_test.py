@@ -4,18 +4,23 @@ import sys
 # state_final = ([1,2,3],
 #                [8,0,4],
 #                [7,6,5])
-# state0=([8,2,3],
+# state0=([2,8,3],
 #         [1,0,4],
 #         [7,6,5])
-
+#
 state_final=([1,2,3,4],
              [5,6,7,8],
              [9,10,11,12],
              [13,14,15,0])
-state0=([11,9,4,15],
-        [1,3,0,12],
-        [7,5,8,6],
-        [13,2,10,14])
+# state0=([11,9,4,15],
+#         [1,3,0,12],
+#         [7,5,8,6],
+#         [13,2,10,14])
+
+state0=([1,2,3,4],
+        [5,6,8,12],
+        [9,10,7,15],
+        [13,14,11,0])
 
 class Node():
     def __init__(self,parent,move):
@@ -42,9 +47,8 @@ class Node():
                 # print(state_final[i,j])
                 if self.state[i,j]!=self.state_final[i,j]:
                     self.h_val+=1
-        if self.state[self.state.shape[0]//2,self.state.shape[0]//2]!=0:
-            self.h_val-=1
-            pass
+        # if self.state[self.state.shape[0]//2,self.state.shape[0]//2]!=0:
+        #     self.h_val-=1
         return self.h_val
 
     def calc_dis_h(self):
