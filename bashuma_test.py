@@ -17,19 +17,22 @@ state0=([11,9,4,15],
         [1,3,0,12],
         [7,5,8,6],
         [13,2,10,14])
-
+size=len(state0[0])
 # state0=([1,3,4,12],
 #         [5,2,6,0],
 #         [9,10,8,7],
 #         [13,14,11,15])
 
+
 class Node():
-    @jit
+    global state_final
+    global size
+
     def __init__(self,parent,move):
-        global state_final
+        # global state_final
         self.move=move
         self.parent = parent
-        self.child = []
+        # self.child = []
         if move=='e':
             self.state=np.array(state0)
             self.depth=0
@@ -38,63 +41,64 @@ class Node():
             self.depth=self.parent.depth+1
             # self.path=self.parent.path.append(move)
         self.state = self._do_move(move)
-        self.state_final=np.array(state_final)
+        # state_final=np.array(state_final)
 
-    @jit
     def calc_diff_bit(self):
         self.h_val=0
-        for i in range(self.state_final.shape[0]):
-            for j in range(self.state_final.shape[1]):
-                # print(self.state[i,j])
-                # print(state_final[i,j])
-                if self.state[i,j]!=self.state_final[i,j]:
-                    self.h_val+=1
+        self.h_val=np.sum(self.state==state_final)
+        # for i in range(size):
+        #     for j in range(size):
+        #         # print(self.state[i,j])
+        #         # print(state_final[i,j])
+        #         if self.state[i,j]!=state_final[i,j]:
+        #             self.h_val+=1
         # if self.state[self.state.shape[0]//2,self.state.shape[0]//2]!=0:
         #     self.h_val-=1
         return self.h_val
 
-    @jit
     def calc_dis_h(self):
         self.h_val=0
-        for num in range(0,self.state_final.flatten().shape[0]):
-            i=np.argwhere(self.state_final==num)[0,0]
-            j=np.argwhere(self.state_final==num)[0,1]
+        state_final_= np.array(state0)
+
+        for num in range(0,size**2):
+            i=np.argwhere(state_final_==num)[0,0]
+            j=np.argwhere(state_final_==num)[0,1]
             i_=np.argwhere(self.state==num)[0,0]
             j_=np.argwhere(self.state==num)[0,1]
             self.h_val+=abs(i-i_)+abs(j-j_)
         return self.h_val
-    @jit
+
     def is_final(self):
         if self.calc_diff_bit()==0:
             return True
         return False
-    @jit
+
     def _calc_legal_move(self):
         self.legal_move=['r','d','l','u']
         if self.move=='r':
             self.legal_move.remove('l')
-        if self.move=='l':
+        elif self.move=='l':
             self.legal_move.remove('r')
-        if self.move=='u':
+        elif self.move=='u':
             self.legal_move.remove('d')
-        if self.move=='d':
+        elif self.move=='d':
             self.legal_move.remove('u')
 
         self.zero_position = [int(np.where(self.state == 0)[0]), int(np.where(self.state == 0)[1])]
         if self.zero_position[0]==0:
             self.legal_move.remove('d')
-        if self.zero_position[0]==self.state_final.shape[0]-1:
+        elif self.zero_position[0]==size-1:
             self.legal_move.remove('u')
-        if self.zero_position[1]==0:
+        elif self.zero_position[1]==0:
             self.legal_move.remove('r')
-        if self.zero_position[1]==self.state_final.shape[1]-1:
+        elif self.zero_position[1]==size-1:
             self.legal_move.remove('l')
         return self.legal_move
-    @jit
+
     def calc_f_val(self):
         self.f_val = self.calc_dis_h() + self.depth
         return self.f_val
-    @jit
+
     def _do_move(self,move):
         # 仅限s0使用
         if move=='e':
@@ -107,19 +111,19 @@ class Node():
             self.state[self.zero_position_pre[0],self.zero_position_pre[1] - 1]= \
             self.state[self.zero_position_pre[0], self.zero_position_pre[1] - 1], \
             self.state[self.zero_position_pre[0], self.zero_position_pre[1]]
-        if move=='l':
+        elif move=='l':
             self.state=self.parent.state.copy()
             self.state[self.zero_position_pre[0],self.zero_position_pre[1]],\
             self.state[self.zero_position_pre[0],self.zero_position_pre[1] + 1]= \
             self.state[self.zero_position_pre[0], self.zero_position_pre[1] + 1], \
             self.state[self.zero_position_pre[0], self.zero_position_pre[1]]
-        if move=='u':
+        elif move=='u':
             self.state=self.parent.state.copy()
             self.state[self.zero_position_pre[0],self.zero_position_pre[1]],\
             self.state[self.zero_position_pre[0]+1,self.zero_position_pre[1]]= \
             self.state[self.zero_position_pre[0]+1, self.zero_position_pre[1]], \
             self.state[self.zero_position_pre[0], self.zero_position_pre[1]]
-        if move=='d':
+        elif move=='d':
             self.state=self.parent.state.copy()
             self.state[self.zero_position_pre[0],self.zero_position_pre[1]],\
             self.state[self.zero_position_pre[0]-1,self.zero_position_pre[1]]= \
@@ -129,15 +133,15 @@ class Node():
 
 
 class Open():
-    @jit
+
     def __init__(self,s0):
         self.l=[s0]
-    @jit
+
     def is_empty(self):
         if len(self.l)==0:
             return True
         return False
-    @jit
+
     def sort(self):
         if len(self.l)==1:
             return self.l
@@ -148,7 +152,7 @@ class Open():
                 self.l[i+1]=self.l[i]
                 i-=1
             self.l[i+1].h_val = key
-    @jit
+
     def sort_t1(self):
         min_f=sys.maxsize
         for i in range(len(self.l)):
@@ -177,7 +181,7 @@ class Closed():
 
     def add(self,node):
         self.l.append(node)
-    @jit
+
     def find(self,node):
         for i in self.l:
             if (node.state==i.state).all():
