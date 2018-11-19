@@ -172,6 +172,8 @@ class Closed():
         for i in range(len(self.l)):
             # 如果找到了状态一样的节点
             if (node.state==self.l[i].state).all():
+                if node.depth<self.l[i].depth:
+                    self.l[i].parent=node.parent
                 return True
         return False
 
@@ -181,8 +183,9 @@ class Closed():
             if (node.state==self.l[i].state).all():
                 # 如果新的节点比老的深度小
                 if node.f<self.l[i].f:
-                    self.l.pop(i)
-                    self.add_sort(node)
+                    # self.l.pop(i)
+                    # self.add_sort(node)
+                    self.l[i]=node
                     return
         # 如果没找到状态一样的节点，直接加进去
         self.add_sort(node)
@@ -197,6 +200,14 @@ class Closed():
 # print(s1.legal_move())
 # print(s1.num)
 
+def print_trace_back(node):
+    lp=[node]
+    while node.parent!=None:
+        lp.insert(0,node.parent)
+        node=node.parent
+    for i in range(len(lp)):
+        print('Step:',i)
+        print(lp[i].state)
 
 def main():
     start=time.time()
@@ -214,6 +225,7 @@ def main():
             print('Success!')
             end=time.time()
             print('time cost:',end-start,'seconds')
+            print_trace_back(cur_node)
             return
         if len(cur_node.legal_move())==0:
             continue
