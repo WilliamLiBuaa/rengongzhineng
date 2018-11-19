@@ -1,41 +1,44 @@
 import numpy as np
 import time
 import copy
-#
-# state_final = ([1,2,3],
-#                [8,0,4],
-#                [7,6,5])
-# state0 = ([0,1,8],
-#           [4,2,3],
-#           [5,6,7])
-# state0=([2,8,3],
-#         [1,0,4],
-#         [7,5,6])
+
+# 移动字典，标志上下左右对应的坐标移动
 move_dict={'up':[-1,0],'down':[1,0],'right':[0,1],'left':[0,-1]}
+
+# 终止状态（目标状态）
 state_final=([1,2,3,4],
              [5,6,7,8],
              [9,10,11,12],
              [13,14,15,0])
+
+# 初始状态（防止在程序中不小心被修改，都定义为tuple）
 state0=([11,9,4,15],
         [1,3,0,12],
         [7,5,8,6],
         [13,2,10,14])
-# state0=([1,4,3,2],
-#         [9,6,8,7],
-#         [5,10,0,12],
-#         [13,14,11,15])
 
+# 边长
 size=len(state0[0])
+# 记录一共生成了多少节点
 node_num_counter=0
 
 
-class Node():
+# 节点类
+class Node:
     def __init__(self,parent,move):
+        """
+        :param parent:节点的父节点（初始状态，也就是第一个节点，父节点为None
+        :param move: 由父节点进行某个移动得到此节点
+        :param state:节点的状态矩阵
+        :param depth:节点的深度
+        :param f:评价函数f值
+        """
         global node_num_counter
         self.num=node_num_counter
         node_num_counter+=1
         self.move=move
         self.parent=parent
+        # 第一个节点初始化使用
         if self.move=='init':
             self.state=np.array(state0)
             self.depth=0
@@ -46,7 +49,6 @@ class Node():
         self.f=self.fx()
         self.bit_diff_val=self.bit_diff()
         self.legal_moves=self.legal_move()
-        # 初始节点初始化专用
 
 
     # 所有移动的主语都是0元素，left表示0元素左移
@@ -64,10 +66,11 @@ class Node():
     def legal_move(self):
         state_pre=copy.deepcopy(self.state)
         legal_moves = ['up', 'down', 'right', 'left']
-        # zpp=zero_pos_pre
-        # zpa=zero_pos_aft
+        # zpp是指zero_pos_pre
+        # zpa是指zero_pos_aft
         zpp=np.where(state_pre==0)
         zpp=(zpp[0][0],zpp[1][0])
+        # 除了起始节点，不考虑回退（up得到的节点不能down回去）
         if self.move!='init':
             if self.move=='up':
                 legal_moves.remove('down')
@@ -77,6 +80,8 @@ class Node():
                 legal_moves.remove('right')
             elif self.move == 'right':
                 legal_moves.remove('left')
+
+        # 检测是否处于边缘，是的话删除相应方向
         if zpp[0]==0:
             legal_moves.remove('up')
         elif zpp[0]==size-1:
@@ -87,25 +92,28 @@ class Node():
             legal_moves.remove('right')
         return legal_moves
 
+    # 和目标有多少位置是不正确的
     def bit_diff(self):
         bit_diff_val=np.sum(self.state==state_final)
         return bit_diff_val
 
+    # 曼哈顿距离
     def manhattan(self):
         manh_dis=0
         state_final_=np.array(state_final)
         for num in range(1,size**2):
-            # i=np.argwhere(self.state==num)
+            # num在state中的坐标
             i=np.argwhere(self.state==num)[0]
+            # num在final_state中的坐标
             j=np.argwhere(state_final_==num)[0]
             manh_dis+=sum(abs(i-j))
         return manh_dis
 
+    # 加权的曼哈顿距离（不同位置的权重不一样，加速收敛）
     def manhattan_w(self):
         manh_dis_w=0
         state_final_=np.array(state_final)
         for num in range(1,size**2):
-            # i=np.argwhere(self.state==num)
             i=np.argwhere(self.state==num)[0]
             j=np.argwhere(state_final_==num)[0]
             if sum(abs(j))==0:
@@ -118,11 +126,12 @@ class Node():
                 manh_dis_w+=sum(abs(i-j))
         return manh_dis_w
 
+    # 评价函数（在此仅用曼哈顿距离，否则很难收敛）
     def fx(self):
         return self.manhattan_w()# + self.depth
 
-
-class Open():
+# open表
+class Open:
     def __init__(self,s0):
         self.l=[s0]
 
@@ -131,6 +140,8 @@ class Open():
             return True
         return False
 
+    # 添加并排序，在向open表里加入元素时，直接找到前面的f都比他小的位置插进去
+    # 省去了加入后在排序的过程
     def add_sort(self,node):
         for i in range(len(self.l)):
             if node.f<self.l[i].f:
@@ -138,6 +149,7 @@ class Open():
                 return
         self.l.append(node)
 
+    # 找到state相同的节点的话，
     def find_replace_add(self,node):
         for i in range(len(self.l)):
             # 如果找到了状态一样的节点
@@ -152,7 +164,6 @@ class Open():
 
     def pop_first(self):
         return self.l.pop(0)
-
 
 class Closed():
     def __init__(self):
@@ -211,6 +222,7 @@ def print_trace_back(node):
 
 def main():
     start=time.time()
+    # 初始节点
     s0=Node(parent=None,move='init')
     o=Open(s0=s0)
     c=Closed()
@@ -224,14 +236,14 @@ def main():
         if cur_node.f==0:
             print('Success!')
             end=time.time()
-            print('time cost:',end-start,'seconds')
             print_trace_back(cur_node)
+            print('time cost:', end - start, 'seconds')
             return
-        if len(cur_node.legal_move())==0:
-            continue
         else:
+            # 扩展节点
             for i in cur_node.legal_moves:
                 n=Node(parent=cur_node,move=i)
+                # 如果n不在closed表中
                 if not c.find(n):
                     o.find_replace_add(n)
 main()
