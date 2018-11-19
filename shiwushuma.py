@@ -1,7 +1,7 @@
 import numpy as np
-import sys
+import time
 import copy
-
+#
 # state_final = ([1,2,3],
 #                [8,0,4],
 #                [7,6,5])
@@ -104,7 +104,7 @@ class Node():
     def manhattan_w(self):
         manh_dis_w=0
         state_final_=np.array(state_final)
-        for num in range(size**2):
+        for num in range(1,size**2):
             # i=np.argwhere(self.state==num)
             i=np.argwhere(self.state==num)[0]
             j=np.argwhere(state_final_==num)[0]
@@ -199,6 +199,7 @@ class Closed():
 
 
 def main():
+    start=time.time()
     s0=Node(parent=None,move='init')
     o=Open(s0=s0)
     c=Closed()
@@ -211,7 +212,8 @@ def main():
         # if cur_node.depth==cur_node.f:
         if cur_node.f==0:
             print('Success!')
-
+            end=time.time()
+            print('time cost:',end-start,'seconds')
             return
         if len(cur_node.legal_move())==0:
             continue
@@ -220,8 +222,4 @@ def main():
                 n=Node(parent=cur_node,move=i)
                 if not c.find(n):
                     o.find_replace_add(n)
-            # for _ in o.l:
-            #     print('open:')
-            #     print(_.f)
-
 main()
